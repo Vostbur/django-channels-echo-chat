@@ -24,10 +24,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
 class ChatJsonConsumer(AsyncJsonWebsocketConsumer):
 
     async def connect(self):
+        self.room_name = self.scope['url_route']['kwargs']['room_name']
+
+        await self.channel_layer.group_add(self.room_name, self.channel_name)
         await self.accept()
 
     async def disconnect(self, code):
-        pass
+        await self.channel_layer.group_discard(self.room_name, self.channel_name)
 
     async def receive_json(self, content, **kwargs):
-        await self.send_json(content)
+        await self.channel_layer.group_send(
+            self.room_name,
+            {
+                'type': 'chat.message',
+                'content': content
+            }
+        )
+
+    async def chat_message(self, event):
+        await self.send_json(event['content'])
