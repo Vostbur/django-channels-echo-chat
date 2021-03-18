@@ -12,11 +12,11 @@ class Command(BaseCommand):
         channel_layer = get_channel_layer()
 
         for i in range(10):
-            content = json.dumps({
+            message = json.dumps({
                 "message": f"Message {i} outside of consumer"
             })
             async_to_sync(channel_layer.group_send)(
                 "room",  # ws://127.0.0.1:8000/ws/chat/room/
-                {"type": "chat.message", "content": content},
+                {"type": "chat_message", "message": message},
             )
             time.sleep(1)
